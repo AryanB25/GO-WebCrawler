@@ -1,1 +1,1 @@
-# Web-Crawler-GO
+# GO-WebCrawler
