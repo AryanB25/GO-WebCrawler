@@ -1,4 +1,4 @@
-# Go Web Crawler
+# Go-WebCrawler
 
 One-paragraph description of what it does.
 
