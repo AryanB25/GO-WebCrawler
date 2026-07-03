@@ -30,7 +30,7 @@ func Crawl(seedURL string, maxPages int) {
 			continue
 		}
 
-		listURL := TokenizerURL(fetchedData) // tokenize the page (string HTML)
+		listURL := TokenizerURL(fetchedData, 2000) // tokenize the page (string HTML)
 
 		fmt.Println("URLs found:", len(listURL))
 
