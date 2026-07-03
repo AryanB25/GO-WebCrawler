@@ -5,17 +5,24 @@ import (
 	"strings"
 )
 
-func TokenizerURL(data string) []string {
+func TokenizerURL(data string, maxTokens int) []string {
 	reader := strings.NewReader(data)
 	tokenizer := html.NewTokenizer(reader)
 	listUrl := []string{} // initializing the slice containing the URL's
+	tokenCount := 0       // counter for the number of tokens
 
 	for {
+		if tokenCount > maxTokens { // if we have surpassed the max tokens allowed
+			break
+		}
+
 		tokenType := tokenizer.Next() // find the token type of the data
 
 		if tokenType == html.ErrorToken { // if there is no more data or HTML pieces
 			break
 		}
+
+		tokenCount++ // increment the token counter
 
 		token := tokenizer.Token() // contains the current token
 
