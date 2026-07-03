@@ -11,10 +11,7 @@ func TokenizerURL(data string, maxTokens int) []string {
 	listUrl := []string{} // initializing the slice containing the URL's
 	tokenCount := 0       // counter for the number of tokens
 
-	for {
-		if tokenCount > maxTokens { // if we have surpassed the max tokens allowed
-			break
-		}
+	for tokenCount <= maxTokens { // run until the token count is less than the allowed limit
 
 		tokenType := tokenizer.Next() // find the token type of the data
 
