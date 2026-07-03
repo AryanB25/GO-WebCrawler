@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 func FetchData(url string) (string, error) {
-	connect, err := http.Get(url) // HTTP request
+	client := &http.Client{Timeout: 10 * time.Second} // creates a configurable HTTP connection manager
+	connect, err := client.Get(url)                   // HTTP request
 
 	if err != nil { // if there are errors when establishing a HTTP request
 		return "", err
