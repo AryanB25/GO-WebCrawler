@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func tokenizerURL(data string) []string {
+func TokenizerURL(data string) []string {
 	reader := strings.NewReader(data)
 	tokenizer := html.NewTokenizer(reader)
 	listUrl := []string{} // initializing the slice containing the URL's

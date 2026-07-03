@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func fetchData(url string) (string, error) {
+func FetchData(url string) (string, error) {
 	connect, err := http.Get(url) // HTTP request
 
 	if err != nil { // if there are errors when establishing a HTTP request
