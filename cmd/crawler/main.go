@@ -3,5 +3,5 @@ package main
 import "GO-WebCrawler/internal/scraper"
 
 func main() {
-	scraper.Crawl("http://books.toscrape.com", 50)
+	scraper.WorkerPool("http://books.toscrape.com", 20, 5)
 }
