@@ -89,12 +89,16 @@ func (pq *priorityQueue) Pop() (string, bool) {
 	return front, true // returns the first element in the priority queue
 }
 
-func (pq *priorityQueue) Peek() (data string) {
+func (pq *priorityQueue) Peek() string {
 	pq.mutex.Lock()
 	defer pq.mutex.Unlock()
 	return pq.elements[0].data // returns the first element in the priority queue
 }
 
-func (pq *priorityQueue) size() (size int) {
+func (pq *priorityQueue) size() int {
 	return len(pq.elements) // returns the size of the priority queue
+}
+
+func (pq *priorityQueue) IsEmpty() bool {
+	return len(pq.elements) == 0 // checks if the priority queue is empty
 }
