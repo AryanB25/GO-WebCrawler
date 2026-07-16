@@ -72,7 +72,7 @@ func WorkerPool(seedURL string, limit int, numberWorkers int) {
 			c := counter
 			mutex.Unlock()
 
-			if c >= limit {
+			if c > limit {
 				break
 			}
 
