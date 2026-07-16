@@ -4,14 +4,16 @@ import (
 	"GO-WebCrawler/internal/datastructures"
 	"fmt"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 )
 
-func WorkerPool(seedURL string, limit int, numberWorkers int) {
-	queue := datastructures.NewQueue()
+func WorkerPool(seedURL string, limit int, numberWorkers int, target string) {
+	queue := datastructures.NewPriorityQueue()
 	set := datastructures.NewSet()
-	queue.Enqueue(seedURL)
+	score := strings.Count(seedURL, target)
+	queue.Push(seedURL, score)
 
 	jobs := make(chan string, numberWorkers*2)
 	var wg sync.WaitGroup
@@ -55,7 +57,8 @@ func WorkerPool(seedURL string, limit int, numberWorkers int) {
 					}
 
 					resolved := base.ResolveReference(relative)
-					queue.Enqueue(resolved.String())
+					urlScore := strings.Count(resolved.String(), target)
+					queue.Push(resolved.String(), urlScore)
 				}
 
 				mutex.Lock()
@@ -81,7 +84,7 @@ func WorkerPool(seedURL string, limit int, numberWorkers int) {
 				continue
 			}
 
-			currentURL, notEmpty := queue.Dequeue()
+			currentURL, notEmpty := queue.Pop() // extract the first priority item
 
 			if !notEmpty { // if the queue is empty
 				continue
