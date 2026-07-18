@@ -36,3 +36,27 @@ func TokenizerURL(data string, maxTokens int) []string {
 
 	return listUrl // returns the links found in the HTML pieces or data
 }
+
+func ExtractWordCounts(data string) map[string]int {
+	reader := strings.NewReader(data)
+	tokenizer := html.NewTokenizer(reader)
+	wordCounts := map[string]int{}
+
+	for {
+		tokenType := tokenizer.Next()
+
+		if tokenType == html.ErrorToken {
+			break
+		}
+
+		if tokenType == html.TextToken {
+			tokenData := tokenizer.Token().Data
+			tokenFields := strings.Fields(tokenData)
+			for _, field := range tokenFields {
+				wordCounts[field] = wordCounts[field] + 1
+			}
+		}
+	}
+
+	return wordCounts
+}
