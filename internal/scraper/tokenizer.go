@@ -53,7 +53,7 @@ func ExtractWordCounts(data string) map[string]int {
 			tokenData := tokenizer.Token().Data
 			tokenFields := strings.Fields(tokenData)
 			for _, field := range tokenFields {
-				wordCounts[field] = wordCounts[field] + 1
+				wordCounts[strings.ToLower(field)] = wordCounts[strings.ToLower(field)] + 1
 			}
 		}
 	}
