@@ -60,3 +60,34 @@ func ExtractWordCounts(data string) map[string]int {
 
 	return wordCounts
 }
+
+func ExtractTitle(data string) string {
+	reader := strings.NewReader(data)
+	tokenizer := html.NewTokenizer(reader)
+	var insideTitle bool
+	titleString := ""
+
+	for {
+		tokenType := tokenizer.Next()
+
+		if tokenType == html.ErrorToken {
+			break
+		}
+
+		token := tokenizer.Token()
+
+		if tokenType == html.StartTagToken {
+			if token.Data == "title" {
+				insideTitle = true
+			}
+		}
+
+		if tokenType == html.TextToken {
+			if insideTitle {
+				titleString = token.Data
+				insideTitle = false
+			}
+		}
+	}
+	return titleString
+}
