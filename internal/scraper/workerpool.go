@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"GO-WebCrawler/internal/datastructures"
+	"GO-WebCrawler/internal/index"
 	"fmt"
 	"net/url"
 	"strings"
@@ -14,6 +15,13 @@ func WorkerPool(seedURL string, limit int, numberWorkers int, target string) {
 	set := datastructures.NewSet()
 	score := strings.Count(seedURL, target)
 	queue.Push(seedURL, score)
+	database, err := index.InitDB()
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer database.Close()
 
 	jobs := make(chan string, numberWorkers*2)
 	var wg sync.WaitGroup
@@ -36,6 +44,22 @@ func WorkerPool(seedURL string, limit int, numberWorkers int, target string) {
 				fetchedData, err := FetchData(currentURL) // fetch the HTML data of the page
 
 				if err != nil { // if an error exists
+					continue
+				}
+
+				titleURL := ExtractTitle(fetchedData)
+				wordCount := ExtractWordCounts(fetchedData)
+				pageScore := strings.Count(currentURL, target)
+
+				err = index.SavePage(database, currentURL, titleURL, pageScore)
+
+				if err != nil {
+					continue
+				}
+
+				err = index.SaveTerms(database, currentURL, wordCount)
+
+				if err != nil {
 					continue
 				}
 
