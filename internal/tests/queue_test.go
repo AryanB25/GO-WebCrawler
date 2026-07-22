@@ -72,47 +72,28 @@ func TestDequeue(t *testing.T) {
 		t.Errorf("Expected Answer (3), got the answer: %d", queue.Size())
 	}
 
-	// Remove and validate each element to confirm FIFO ordering.
-	expectedValue, isNotEmpty := queue.Dequeue()
-
-	if !isNotEmpty {
-		t.Errorf("Expected the queue to not be empty")
+	testVariables := []struct {
+		operation string
+		input     string
+		expected  string
+	}{
+		{"Dequeue the first link", "https://www.freecodecamp.org/news/unit-testing-in-go-a-beginners-guide/", "https://www.freecodecamp.org/news/unit-testing-in-go-a-beginners-guide/"},
+		{"Dequeue the second link", "https://www.ubc.ca", "https://www.ubc.ca"},
+		{"Dequeue the third link", "https://news.ycombinator.com/item?id=19413348", "https://news.ycombinator.com/item?id=19413348"},
 	}
 
-	if expectedValue != "https://www.freecodecamp.org/news/unit-testing-in-go-a-beginners-guide/" {
-		t.Errorf("Expected Answer %q, got the answer: %q", "https://www.freecodecamp.org/news/unit-testing-in-go-a-beginners-guide/", expectedValue)
-	}
+	for _, tt := range testVariables {
+		t.Run(tt.operation, func(t *testing.T) {
+			expectedValue, isNotEmpty := queue.Dequeue()
 
-	expectedValue, isNotEmpty = queue.Dequeue()
+			if !isNotEmpty {
+				t.Errorf("Expected the queue to not be empty")
+			}
 
-	if !isNotEmpty {
-		t.Errorf("Expected the queue to not be empty")
-	}
-
-	if expectedValue != "https://www.ubc.ca" {
-		t.Errorf("Expected Answer %q, got the answer: %q", "https://www.ubc.ca", expectedValue)
-	}
-
-	expectedValue, isNotEmpty = queue.Dequeue()
-
-	if !isNotEmpty {
-		t.Errorf("Expected the queue to not be empty")
-	}
-
-	if expectedValue != "https://news.ycombinator.com/item?id=19413348" {
-		t.Errorf("Expected Answer %q, got the answer: %q", "https://news.ycombinator.com/item?id=19413348", expectedValue)
-	}
-
-	// Confirm that removing from an empty queue correctly returns
-	// an unsuccessful operation state.
-	expectedValue, isNotEmpty = queue.Dequeue()
-
-	if isNotEmpty {
-		t.Errorf("Expected the queue to not be empty")
-	}
-
-	if expectedValue != "" {
-		t.Errorf("Expected Answer %q, got the answer: %q", "", expectedValue)
+			if expectedValue != tt.expected {
+				t.Errorf("Expected Answer %q, got the answer: %q", tt.expected, expectedValue)
+			}
+		})
 	}
 }
 
