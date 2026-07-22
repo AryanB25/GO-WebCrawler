@@ -14,6 +14,9 @@ func NewSet() *Set { // create a new set
 func (set *Set) Add(url string) {
 	set.mutex.Lock()
 	defer set.mutex.Unlock()
+	if url == "" { // if the url is an empty string
+		return
+	}
 	set.elements[url] = true // adds the url to the set
 }
 
