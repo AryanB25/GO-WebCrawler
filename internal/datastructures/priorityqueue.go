@@ -23,6 +23,10 @@ func (pq *priorityQueue) Push(data string, score int) {
 	pq.mutex.Lock()
 	defer pq.mutex.Unlock()
 
+	if data == "" {
+		return
+	}
+
 	priorityItem := Item{data, score}               // creates a new "item" for our priority queue
 	pq.elements = append(pq.elements, priorityItem) // appends the "item" to the slice
 	childIndex := pq.size() - 1                     // index of the child item
