@@ -4,9 +4,14 @@ import (
 	"GO-WebCrawler/internal/datastructures"
 	"fmt"
 	"net/url"
+	"time"
 )
 
 func Crawl(seedURL string, maxPages int) {
+	startTime := time.Now()
+	fmt.Println("Starting crawler...")
+	fmt.Println("Maximum Pages:", maxPages)
+
 	queue := datastructures.NewQueue() // create queue
 	set := datastructures.NewSet()     // create set
 	queue.Enqueue(seedURL)             // enqueue seed URL
@@ -31,8 +36,6 @@ func Crawl(seedURL string, maxPages int) {
 
 		listURL := TokenizerURL(fetchedData, 2000) // tokenize the page (string HTML)
 
-		fmt.Println("URLs found:", len(listURL))
-
 		base, err := url.Parse(currentURL)
 
 		if err != nil {
@@ -50,4 +53,9 @@ func Crawl(seedURL string, maxPages int) {
 
 		counter++ // increment page count
 	}
+
+	elapsed := time.Since(startTime)
+	fmt.Println()
+	fmt.Printf("Finished crawling %d pages\n", counter)
+	fmt.Printf("Runtime: %.2fs\n", elapsed.Seconds())
 }
