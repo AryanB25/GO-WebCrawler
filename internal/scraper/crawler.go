@@ -3,6 +3,7 @@ package scraper
 import (
 	"GO-WebCrawler/internal/datastructures"
 	"fmt"
+	"net/url"
 )
 
 func Crawl(seedURL string, maxPages int) {
@@ -18,10 +19,8 @@ func Crawl(seedURL string, maxPages int) {
 			continue
 		}
 
-		if set.Contains(currentURL) { // if the URL has been visited
+		if !set.AddIfNotExists(currentURL) {
 			continue
-		} else {
-			set.Add(currentURL) // add the URL to the set if not visited
 		}
 
 		fetchedData, err := FetchData(currentURL) // fetch the HTML data of the page
@@ -34,8 +33,19 @@ func Crawl(seedURL string, maxPages int) {
 
 		fmt.Println("URLs found:", len(listURL))
 
-		for _, url := range listURL {
-			queue.Enqueue(url) // enqueue the URL's into the queue
+		base, err := url.Parse(currentURL)
+
+		if err != nil {
+			continue
+		}
+
+		for _, pointURL := range listURL {
+			relative, err := url.Parse(pointURL)
+			if err != nil {
+				continue
+			}
+			resolved := base.ResolveReference(relative)
+			queue.Enqueue(resolved.String()) // enqueue the URL's into the queue
 		}
 
 		counter++ // increment page count
