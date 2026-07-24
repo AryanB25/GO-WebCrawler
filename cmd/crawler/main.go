@@ -26,6 +26,6 @@ func main() {
 			fmt.Println(current)
 		}
 	} else {
-		scraper.WorkerPool("http://books.toscrape.com", 20, 5, *crawlTarget)
+		scraper.WorkerPool("https://books.toscrape.com", 100, 10, *crawlTarget)
 	}
 }
