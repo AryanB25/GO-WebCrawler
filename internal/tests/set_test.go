@@ -20,7 +20,7 @@ func TestSet(t *testing.T) {
 	for _, tt := range testVariables {
 		t.Run(tt.operation, func(t *testing.T) {
 			set := datastructures.NewSet()
-			set.Add(tt.input)              // add the test input to a fresh set
+			set.AddIfNotExists(tt.input)   // add the test input to a fresh set
 			if set.Size() != tt.expected { // verify size matches expected after add
 				t.Errorf("Expected the size to be %d, but the size is %d", tt.expected, set.Size())
 			}
@@ -44,7 +44,7 @@ func TestAddSetMultiple(t *testing.T) {
 
 	for _, tt := range testVariables {
 		t.Run(tt.operation, func(t *testing.T) {
-			set.Add(tt.input)              // add each URL to the shared set
+			set.AddIfNotExists(tt.input)              // add each URL to the shared set
 			if set.Size() != tt.expected { // verify size grows by 1 each time
 				t.Errorf("Expected the size to be %d, but the size is %d", tt.expected, set.Size())
 			}
@@ -67,9 +67,9 @@ func TestContains(t *testing.T) {
 	for _, tt := range testVariables {
 		t.Run(tt.operation, func(t *testing.T) {
 			set := datastructures.NewSet()
-			set.Add(tt.input)                          // add the input so we can check it exists
+			set.AddIfNotExists(tt.input)                          // add the input so we can check it exists
 			if set.Contains(tt.input) != tt.expected { // verify Contains returns the expected result
-				t.Errorf("Expected %t, got %t", tt.expected, set.Contains(tt.input))
+				t.Errorf("Expected %t, got %t", tt.expected, set.AddIfNotExists(tt.input))
 			}
 		})
 	}
@@ -79,8 +79,8 @@ func TestContains(t *testing.T) {
 // Verifies that added URLs are found and URLs never added return false.
 func TestContainsMultiple(t *testing.T) {
 	set := datastructures.NewSet()
-	set.Add("https://www.ubc.ca")                            // pre-populate the set
-	set.Add("https://news.ycombinator.com/item?id=19413348") // pre-populate the set
+	set.AddIfNotExists("https://www.ubc.ca")                            // pre-populate the set
+	set.AddIfNotExists("https://news.ycombinator.com/item?id=19413348") // pre-populate the set
 
 	testVariables := []struct {
 		operation string
@@ -96,7 +96,7 @@ func TestContainsMultiple(t *testing.T) {
 	for _, tt := range testVariables {
 		t.Run(tt.operation, func(t *testing.T) {
 			if set.Contains(tt.input) != tt.expected { // verify each URL's presence matches expectation
-				t.Errorf("Expected %t, got %t", tt.expected, set.Contains(tt.input))
+				t.Errorf("Expected %t, got %t", tt.expected, set.AddIfNotExists(tt.input))
 			}
 		})
 	}
