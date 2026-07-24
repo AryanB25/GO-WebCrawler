@@ -5,6 +5,9 @@ import (
 	"strings"
 )
 
+// TokenizerURL scans the HTML string and extracts all href values from anchor tags.
+// maxTokens limits how many tokens are scanned to prevent slow crawling on large pages.
+// Returns a slice of raw URL strings found on the page — may include relative URLs.
 func TokenizerURL(data string, maxTokens int) []string {
 	reader := strings.NewReader(data)
 	tokenizer := html.NewTokenizer(reader)
@@ -37,6 +40,10 @@ func TokenizerURL(data string, maxTokens int) []string {
 	return listUrl // returns the links found in the HTML pieces or data
 }
 
+// ExtractWordCounts scans the HTML string and builds a frequency map of every
+// visible word on the page. Only TextTokens are counted — tags and attributes
+// are ignored. All words are lowercased for case-insensitive search matching.
+// Returns a map of word → number of times it appeared on the page.
 func ExtractWordCounts(data string) map[string]int {
 	reader := strings.NewReader(data)
 	tokenizer := html.NewTokenizer(reader)
@@ -45,15 +52,15 @@ func ExtractWordCounts(data string) map[string]int {
 	for {
 		tokenType := tokenizer.Next()
 
-		if tokenType == html.ErrorToken {
+		if tokenType == html.ErrorToken { // no more tokens to scan
 			break
 		}
 
 		if tokenType == html.TextToken {
-			tokenData := tokenizer.Token().Data
-			tokenFields := strings.Fields(tokenData)
+			tokenData := tokenizer.Token().Data      // raw text between HTML tags
+			tokenFields := strings.Fields(tokenData) // split into individual words on whitespace
 			for _, field := range tokenFields {
-				wordCounts[strings.ToLower(field)] = wordCounts[strings.ToLower(field)] + 1
+				wordCounts[strings.ToLower(field)] = wordCounts[strings.ToLower(field)] + 1 // count each word
 			}
 		}
 	}
@@ -61,16 +68,20 @@ func ExtractWordCounts(data string) map[string]int {
 	return wordCounts
 }
 
+// ExtractTitle scans the HTML string and returns the text content inside the
+// first <title> tag found. Uses a boolean flag to detect when the tokenizer
+// has entered a title tag and captures the next TextToken as the title.
+// Returns an empty string if no title tag is found.
 func ExtractTitle(data string) string {
 	reader := strings.NewReader(data)
 	tokenizer := html.NewTokenizer(reader)
-	var insideTitle bool
+	var insideTitle bool // flag that becomes true once we enter a <title> tag
 	titleString := ""
 
 	for {
 		tokenType := tokenizer.Next()
 
-		if tokenType == html.ErrorToken {
+		if tokenType == html.ErrorToken { // end of document or parse error
 			break
 		}
 
@@ -78,14 +89,14 @@ func ExtractTitle(data string) string {
 
 		if tokenType == html.StartTagToken {
 			if token.Data == "title" {
-				insideTitle = true
+				insideTitle = true // next TextToken will be the title content
 			}
 		}
 
 		if tokenType == html.TextToken {
 			if insideTitle {
-				titleString = token.Data
-				insideTitle = false
+				titleString = token.Data // capture the title text
+				insideTitle = false      // reset flag — title has been found
 			}
 		}
 	}
