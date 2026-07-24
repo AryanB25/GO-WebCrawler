@@ -11,6 +11,8 @@ import (
 // tables if they don't already exist. Returns the database connection for reuse.
 func InitDB() (*sql.DB, error) {
 	database, err := sql.Open("sqlite", "./gocrawlerdatabase.db") // open or create the database file
+	database.SetMaxOpenConns(1)
+
 	if err != nil {
 		return database, err
 	}
@@ -33,7 +35,7 @@ func InitDB() (*sql.DB, error) {
 // SavePage inserts a crawled page's metadata into the pages table.
 // Records the URL, title, timestamp of when it was crawled, and its keyword score.
 func SavePage(db *sql.DB, url string, title string, score int) error {
-	_, err := db.Exec("INSERT INTO pages (url, title, crawled_at, score) VALUES (?, ?, ?, ?)", url, title, time.Now(), score) // insert page with current timestamp
+	_, err := db.Exec("INSERT OR IGNORE INTO pages (url, title, crawled_at, score) VALUES (?, ?, ?, ?)", url, title, time.Now(), score) // insert page with current timestamp
 	if err != nil {
 		return err
 	}
@@ -45,7 +47,7 @@ func SavePage(db *sql.DB, url string, title string, score int) error {
 // and how many times that term appeared on that page.
 func SaveTerms(db *sql.DB, url string, wordCounts map[string]int) error {
 	for term, count := range wordCounts { // iterate over every word found on the page
-		_, err := db.Exec("INSERT INTO index_table (term, url, frequency) VALUES (?, ?, ?)", term, url, count)
+		_, err := db.Exec("INSERT OR IGNORE INTO index_table (term, url, frequency) VALUES (?, ?, ?)", term, url, count)
 		if err != nil {
 			return err
 		}
