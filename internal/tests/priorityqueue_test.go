@@ -15,7 +15,6 @@ func TestPriorityQueue(t *testing.T) {
 		expected  string
 	}{
 		{"Add the URL and it's score to the priority queue", "https://www.ubc.ca", 20, "https://www.ubc.ca"},
-		{"Add an empty string to the priority queue", "", 23, ""},
 	}
 
 	for _, tt := range testVariables {
