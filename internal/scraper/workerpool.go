@@ -36,10 +36,8 @@ func WorkerPool(seedURL string, limit int, numberWorkers int, target string) {
 	}
 	defer database.Close() // close the database connection when WorkerPool exits
 
-	jobs := make(chan string, numberWorkers) // buffered channel distributes URLs to workers
+	jobs := make(chan string, numberWorkers*2) // buffered channel distributes URLs to workers
 	var wg sync.WaitGroup
-
-	counter := 0 // tracks how many pages have been successfully crawled
 
 	// launch N worker goroutines — each independently fetches and processes pages
 	for range numberWorkers {
@@ -47,17 +45,6 @@ func WorkerPool(seedURL string, limit int, numberWorkers int, target string) {
 		go func() {
 			defer wg.Done() // signal this worker is done when it exits
 			for currentURL := range jobs {
-				mutex.Lock()
-				if counter >= limit {
-					mutex.Unlock()
-					continue
-				}
-				mutex.Unlock()
-
-				if !set.AddIfNotExists(currentURL) {
-					continue
-				}
-
 				fetchedData, err := FetchData(currentURL) // fetch raw HTML from the page
 				if err != nil {
 					fmt.Println("fetch error:", err)
@@ -99,10 +86,6 @@ func WorkerPool(seedURL string, limit int, numberWorkers int, target string) {
 					urlScore := strings.Count(resolved.String(), target) // score the resolved URL by keyword
 					queue.Push(resolved.String(), urlScore)              // push to priority queue with score
 				}
-
-				mutex.Lock()
-				counter++ // safely increment page count across goroutines
-				mutex.Unlock()
 			}
 		}()
 	}
@@ -114,19 +97,17 @@ func WorkerPool(seedURL string, limit int, numberWorkers int, target string) {
 			currentURL, notEmpty := queue.Pop()
 
 			if !notEmpty {
+				time.Sleep(5 * time.Millisecond)
 				continue
 			}
 
-			mutex.Lock()
-
-			if counter >= limit {
-				mutex.Unlock()
+			if set.Size() >= limit {
 				break
 			}
 
-			counter++
-			mutex.Unlock()
-			jobs <- currentURL
+			if set.AddIfNotExists(currentURL) {
+				jobs <- currentURL
+			}
 		}
 		close(jobs) // closing the channel signals all workers to stop ranging and exit
 	}()
@@ -134,6 +115,6 @@ func WorkerPool(seedURL string, limit int, numberWorkers int, target string) {
 	wg.Wait() // block until all workers have finished processing
 	elapsed := time.Since(startTime)
 	fmt.Println()
-	fmt.Printf("Finished crawling %d pages\n", counter)
+	fmt.Printf("Finished crawling %d pages\n", set.Size())
 	fmt.Printf("Runtime: %.2fs\n", elapsed.Seconds())
 }
