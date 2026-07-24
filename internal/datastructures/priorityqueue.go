@@ -92,6 +92,9 @@ func (pq *priorityQueue) Pop() (string, bool) {
 func (pq *priorityQueue) Peek() string {
 	pq.mutex.Lock()
 	defer pq.mutex.Unlock()
+	if len(pq.elements) == 0 {
+		return ""
+	}
 	return pq.elements[0].data // returns the first element in the priority queue
 }
 
@@ -100,5 +103,7 @@ func (pq *priorityQueue) size() int {
 }
 
 func (pq *priorityQueue) IsEmpty() bool {
+	pq.mutex.Lock()
+	defer pq.mutex.Unlock()
 	return len(pq.elements) == 0 // checks if the priority queue is empty
 }
