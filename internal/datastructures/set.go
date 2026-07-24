@@ -12,15 +12,27 @@ func NewSet() *Set { // create a new set
 }
 
 func (s *Set) AddIfNotExists(value string) bool {
-    s.mutex.Lock()
-    defer s.mutex.Unlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 
-    if _, exists := s.elements[value]; exists {
-        return false
-    }
+	if value == "" {
+		return false
+	}
 
-    s.elements[value] = true
-    return true
+	if _, exists := s.elements[value]; exists {
+		return false
+	}
+
+	s.elements[value] = true
+	return true
+}
+
+func (s *Set) Contains(value string) bool {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	_, exists := s.elements[value]
+	return exists
 }
 
 func (set *Set) Size() int {
