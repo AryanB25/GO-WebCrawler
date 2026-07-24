@@ -11,19 +11,16 @@ func NewSet() *Set { // create a new set
 	return &Set{elements: map[string]bool{}} // returns the address to a new set
 }
 
-func (set *Set) Add(url string) {
-	set.mutex.Lock()
-	defer set.mutex.Unlock()
-	if url == "" { // if the url is an empty string
-		return
-	}
-	set.elements[url] = true // adds the url to the set
-}
+func (s *Set) AddIfNotExists(value string) bool {
+    s.mutex.Lock()
+    defer s.mutex.Unlock()
 
-func (set *Set) Contains(url string) bool {
-	set.mutex.Lock()
-	defer set.mutex.Unlock()
-	return set.elements[url] // checks if the url is in the set
+    if _, exists := s.elements[value]; exists {
+        return false
+    }
+
+    s.elements[value] = true
+    return true
 }
 
 func (set *Set) Size() int {
