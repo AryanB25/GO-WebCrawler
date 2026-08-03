@@ -1,8 +1,6 @@
 # Go-Web Crawler
 
-A concurrent web crawler and keyword search engine built from scratch in Go. Point it at a website, give it a keyword — it crawls hundreds of pages in parallel, scores each one by relevance using a priority queue, stores everything in a SQLite database, and returns ranked results in under a second.
-
-Built to understand concurrent systems deeply: goroutines, channels, mutexes, deadlocks, and the architecture decisions that come with them.
+A concurrent web crawler and keyword search engine built from scratch in Go. Point it at a website, give it a keyword — it crawls hundreds of pages in parallel, scores each one by relevance using a priority queue, stores everything in a SQLite database, and returns ranked results.
 
 ---
 
@@ -28,10 +26,10 @@ http://books.toscrape.com/catalogue/and-then-there-were-none_679/index.html
 
 | Mode | Pages Crawled | Time |
 |---|---|---|
-| Single-threaded BFS | 100 | 10.4s |
-| Worker pool (10 goroutines) | 100 | 2.4s |
+| Single-threaded BFS | 100 | 10.9s |
+| Worker pool (10 goroutines) | 100 | 4.6s |
 
-**4.3x faster.** Network wait time — the bottleneck in any crawler — gets filled by other workers instead of wasted sitting idle.
+**2.4x faster.** Network wait time — the bottleneck in any crawler — gets filled by other workers instead of wasted sitting idle.
 
 ---
 
@@ -44,7 +42,7 @@ This project went through three distinct versions, each solving a real problem t
 The first version was a plain breadth-first search crawler. One goroutine, one page at a time.
 seed URL → enqueue → dequeue → fetch → tokenize → enqueue new URLs → repeat
 
-It worked but it was slow. Every page fetch blocks until the server responds, so the program spends most of its time sitting idle waiting on the network. 100 pages took around 10.4 seconds.
+It worked but it was slow. Every page fetch blocks until the server responds, so the program spends most of its time sitting idle waiting on the network. 100 pages took around 10.9 seconds.
 
 ### Version 2: Concurrent worker pool
 
@@ -56,7 +54,7 @@ workers: read URL → fetch → push new URLs back to same channel
 
 With 10 workers all finishing pages at the same time, all 10 try to send new URLs into a full channel simultaneously. Every worker blocks trying to send. But nothing is reading from the channel because all workers are blocked trying to write. The program hangs forever.
 
-The fix was architectural — separate the dispatch channel from the pending-work queue entirely. Workers push new URLs onto an in-memory queue (never blocks). A dedicated feeder goroutine reads from the queue and sends into the channel at a rate workers can consume. This dropped crawl time from 10.4 seconds to 2.4 seconds across 100 pages.
+The fix was architectural — separate the dispatch channel from the pending-work queue entirely. Workers push new URLs onto an in-memory queue (never blocks). A dedicated feeder goroutine reads from the queue and sends into the channel at a rate workers can consume. This dropped crawl time from 10.9 seconds to 4.6 seconds across 100 pages.
 
 ### Version 3: Priority queue and inverted index
 
@@ -66,7 +64,7 @@ Replacing the plain queue with a binary max-heap priority queue meant URLs get s
 
 The final piece was persistence — storing everything in a SQLite-backed inverted index so results survive the crawl and can be queried in sub-second time.
 Version 1: single-threaded BFS → 10.4s / 100 pages
-Version 2: concurrent worker pool → 2.4s / 100 pages (4.3x faster)
+Version 2: concurrent worker pool → 4.6s / 100 pages (2.4x faster)
 Version 3: priority queue + index → ranked, persistent, searchable results
 
 ---
@@ -163,7 +161,7 @@ WHERE term = ?
 ORDER BY frequency DESC
 ```
 
-Pages where the search term appears most frequently rank highest. After crawling 100 pages: **4,000+ term-URL mappings** stored in the index.
+Pages where the search term appears most frequently rank highest. After crawling 100 pages: **3,800+ term-URL mappings** stored in the index.
 
 ---
 
@@ -195,8 +193,6 @@ The priority queue and set are accessed by multiple goroutines simultaneously. B
 - **golang.org/x/net/html** — HTML tokenizer for link and text extraction
 - **modernc.org/sqlite** — pure-Go SQLite driver, no CGO required
 - **SQLite** — local database for page metadata and inverted index
-
-No web framework. No ORM. No external crawler library.
 
 ---
 
@@ -241,35 +237,6 @@ go test ./internal/datastructures/...
 ```
 
 Covers enqueue/dequeue ordering, set deduplication and lookup, priority queue heap ordering across multiple pushes, and pop returning items in score-descending order. All tests pass with `go test -race`.
-
----
-
-## Project Structure
-GO-WebCrawler/
-├── cmd/
-│ └── crawler/
-│ └── main.go # CLI entry point — flags and wiring only
-├── internal/
-│ ├── datastructures/
-│ │ ├── queue.go # Slice-backed FIFO queue
-│ │ ├── queue_test.go
-│ │ ├── set.go # map[string]bool set
-│ │ ├── set_test.go
-│ │ ├── priorityqueue.go # Binary max-heap
-│ │ └── priorityqueue_test.go
-│ ├── scraper/
-│ │ ├── fetcher.go # HTTP client with timeout
-│ │ ├── parser.go # HTML tokenizer, word counter, title extractor
-│ │ ├── crawler.go # Single-threaded BFS crawler
-│ │ └── workerpool.go # Concurrent worker pool
-│ └── index/
-│ ├── store.go # SQLite init, save page, save terms
-│ └── search.go # Ranked keyword search
-├── scratch/ # Practice programs used during development
-├── go.mod
-├── go.sum
-├── README.md
-└── LICENSE
 
 ---
 
