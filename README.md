@@ -70,44 +70,7 @@ Version 3: priority queue + index → ranked, persistent, searchable results
 ---
 
 ## Architecture
-                    ┌─────────────────┐
-                    │    main.go      │
-                    └────────┬────────┘
-                             │
-           ┌─────────────────┴──────────────────┐
-           │                                    │
-      --target                             --search
-           │                                    │
-           ▼                                    ▼
-   ┌───────────────┐                  ┌──────────────────┐
-   │  WorkerPool() │                  │  SearchTerms()   │
-   └───────┬───────┘                  │  (SQLite query)  │
-           │                          └──────────────────┘
- ┌─────────┴──────────┐
- │                    │
- ▼                    ▼
-┌──────────┐ ┌───────────────┐
-│ Feeder │ │ Priority │◄──── new URLs with scores
-│ goroutine│◄─────│ Queue │
-└────┬─────┘ │ (max-heap) │
-│ └───────────────┘
-│ jobs channel (buffered chan string)
-▼
-┌─────────────────────────────────────────┐
-│ Worker 1 │ Worker 2 │ ... │ Worker N │ (concurrent)
-└──────────────────────┬──────────────────┘
-│
-┌────────────┼────────────┐
-▼ ▼ ▼
-FetchData TokenizerURL ExtractWordCounts
-│
-▼
-┌─────────────────┐
-│ SQLite Database│
-├─────────────────┤
-│ pages table │
-│ index_table │
-└─────────────────┘
+![Go-WebCrawler Architecture](internal/assets/Go-WebCrawlerArchitecture.png)
 
 ---
 
