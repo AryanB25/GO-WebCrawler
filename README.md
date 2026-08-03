@@ -70,7 +70,7 @@ Version 3: priority queue + index → ranked, persistent, searchable results
 ---
 
 ## Architecture
-![Go-WebCrawler Architecture](internal/assets/GO-WebCrawlerArchitecture.png)
+![Go-WebCrawler Architecture](assets/GO-WebCrawlerArchitecture.png)
 
 ---
 
